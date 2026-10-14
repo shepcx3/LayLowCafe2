@@ -5,7 +5,7 @@ Website for Lay Low Cafe, 241 Princess St, Kingston, ON. Served at https://laylo
 It's plain HTML, CSS and a little JavaScript. There's no build step and no framework, so any static host can serve the repo as it is.
 
 ```
-index.html              the cafe page: hero, menu, visit (map, hours, phone), fall pop-up
+index.html              the cafe page: hero, menu, visit (map, hours, phone), fall banner
 late-night/index.html   Late Night @ Lay Low: events and private bookings (dark theme)
 menu/ events/ contact-us/   tiny redirects so the old GoDaddy URLs still work (events/ goes to late-night/)
 404.html
@@ -33,7 +33,7 @@ python3 -m http.server 8080
 
 **Events.** Edit the event list in `late-night/index.html`. The comment above the list explains how. Each event has a `data-date` and hides itself automatically once its day has passed. When none are left, the page says new events are on the way. Also update the matching JSON-LD entry at the top of that file so Google shows the event.
 
-**Seasonal pop-up.** The fall drinks card is the `<aside class="pop">` near the bottom of `index.html`. Edit the text there. A visitor who closes it won't see it again. For next season's card, change `data-pop-id` (e.g. to `winter-2026`) so everyone sees the new one. Delete the `<aside>` to turn the pop-up off.
+**Seasonal banner.** The fall drinks strip is the `fall-banner` block at the top of `index.html`. Edit the `<span>` items in **both** `<p>` lines, which must match because the second copy makes the scroll loop seamlessly. Delete the whole block to remove it.
 
 **Photos.** The page uses one hero photo, `assets/img/brunch-spread.jpg`. The other photos in `assets/img/` are spares for swapping in. Keep photos at roughly 1200px on the long edge and JPEG quality 80.
 

@@ -256,42 +256,24 @@ p { margin: 0 0 1em; }
   .action-bar svg { width: 20px; height: 20px; }
 }
 
-/* ---------- Fall drinks pop-up ---------- */
-.pop {
-  position: fixed; z-index: 70; right: 20px; bottom: 20px;
-  width: min(330px, calc(100vw - 24px));
-  padding: 20px 20px 18px; border-radius: 22px;
-  background: var(--paper); border: 1px solid var(--line);
-  box-shadow: 0 24px 50px -18px rgba(31, 28, 22, 0.45);
-  animation: pop-in 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+/* ---------- Fall drinks banner ---------- */
+.fall-banner {
+  background: #c65f26; color: #fff8ec; overflow: hidden;
+  border-bottom: 3px solid #8f3c12;
 }
-.pop[hidden] { display: none; }
-.pop.is-leaving { animation: pop-out 0.25s ease both; }
-@keyframes pop-in { from { opacity: 0; transform: translateY(24px) scale(0.96); } }
-@keyframes pop-out { to { opacity: 0; transform: translateY(16px) scale(0.97); } }
-.pop h2 { font-size: 1.45rem; margin: 10px 0 6px; padding-right: 24px; }
-.pop p { font-size: 0.9rem; color: var(--ink-soft); margin: 0; line-height: 1.5; }
-.pop-badge {
-  display: inline-block; padding: 4px 10px; border-radius: 999px;
-  background: #f6dcc2; color: #8a3d12; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em;
-}
-.pop-flavours { list-style: none; padding: 0; margin: 10px 0 12px; display: flex; flex-wrap: wrap; gap: 6px; }
-.pop-flavours li {
-  font-size: 0.8rem; font-weight: 600; padding: 4px 10px; border-radius: 999px;
-  background: var(--cream); border: 1px solid var(--line);
-}
-.pop-new { padding-top: 10px; border-top: 1px dashed var(--line); }
-.pop-new strong { color: var(--ink); }
-.pop-close {
-  position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%;
-  display: grid; place-items: center; border: 0; background: var(--cream-2); color: var(--ink); cursor: pointer;
-}
-.pop-close:hover { background: var(--ink); color: var(--cream); }
-@media (max-width: 640px) {
-  .pop { left: 12px; right: 12px; width: auto; bottom: calc(88px + env(safe-area-inset-bottom)); padding: 14px 14px 12px; }
-  .pop-flavours { margin: 8px 0 10px; gap: 5px; }
-  .pop-flavours li { font-size: 0.74rem; padding: 3px 9px; }
-  .pop h2 { font-size: 1.25rem; }
+.fall-track { display: flex; width: max-content; animation: fall-scroll 45s linear infinite; }
+.fall-banner:hover .fall-track { animation-play-state: paused; }
+.fall-track p { display: flex; margin: 0; padding: 11px 0; white-space: nowrap; font-weight: 600; font-size: 0.95rem; }
+.fall-track span { display: inline-flex; align-items: center; }
+.fall-track span::after { content: "✦"; color: var(--sun); margin: 0 1.4em; }
+.fall-track span:first-child { font: italic 600 1.08rem/1 var(--font-display); }
+@keyframes fall-scroll { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) {
+  .fall-track { animation: none; width: auto; }
+  .fall-track p { display: block; white-space: normal; padding: 10px 16px; text-align: center; font-size: 0.88rem; }
+  .fall-track span { display: block; }
+  .fall-track span::after { content: none; }
+  .fall-track p[aria-hidden] { display: none; }
 }
 
 /* ==========================================================================
@@ -383,5 +365,5 @@ p { margin: 0 0 1em; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .btn, .night-link, .event { transition: none; }
-  .pop, .pop.is-leaving, .night-badge img, .night-badge .spark { animation: none; }
+  .night-badge img, .night-badge .spark { animation: none; }
 }

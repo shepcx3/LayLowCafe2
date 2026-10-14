@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,500..600,100,1;1,9..144,500..600,100,1&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css?v=4">
+  <link rel="stylesheet" href="assets/css/styles.css?v=5">
   <link rel="preload" as="image" href="assets/img/brunch-spread.jpg">
 
   <script type="application/ld+json">
@@ -57,10 +57,18 @@
     ]
   }
   </script>
-  <script src="assets/js/main.js?v=4" defer></script>
+  <script src="assets/js/main.js?v=5" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- Fall drinks banner. Edit or delete this block for next season. -->
+  <div class="fall-banner" role="region" aria-label="Fall drinks">
+    <div class="fall-track">
+      <p><span>🍂 Our fall drinks are here</span><span>Try any new flavour as a latte or matcha: cherry pie · carrot cheesecake · apple crumble · banana bread · honey cardamom · salted caramel</span><span>New for fall!! Local apple cider, iced or steamed</span><span>Try our new dirty chaider for a quick energy boost</span></p>
+      <p aria-hidden="true"><span>🍂 Our fall drinks are here</span><span>Try any new flavour as a latte or matcha: cherry pie · carrot cheesecake · apple crumble · banana bread · honey cardamom · salted caramel</span><span>New for fall!! Local apple cider, iced or steamed</span><span>Try our new dirty chaider for a quick energy boost</span></p>
+    </div>
+  </div>
 
   <header class="site-header">
     <div class="container">
@@ -228,25 +236,6 @@
       <p class="footer-small">© <span data-year>2026</span> Lay Low Cafe · Kingston, Ontario</p>
     </div>
   </footer>
-
-  <!-- Fall drinks pop-up. Shown once per visitor until closed; bump data-pop-id for next season's pop-up. -->
-  <aside class="pop" id="fall-pop" data-pop-id="fall-2026" aria-labelledby="pop-h" hidden>
-    <button class="pop-close" type="button" aria-label="Close">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
-    <span class="pop-badge">🍂 New for fall</span>
-    <h2 id="pop-h">Our fall drinks are here</h2>
-    <p>Try any of our new flavours as a latte or matcha:</p>
-    <ul class="pop-flavours">
-      <li>Cherry pie</li>
-      <li>Carrot cheesecake</li>
-      <li>Apple crumble</li>
-      <li>Banana bread</li>
-      <li>Honey cardamom</li>
-      <li>Salted caramel</li>
-    </ul>
-    <p class="pop-new"><strong>New for fall!!</strong> Grab our local apple cider, iced or steamed, or try our new <strong>dirty chaider</strong> for a quick energy boost.</p>
-  </aside>
 
   <nav class="action-bar" aria-label="Quick actions">
     <a href="#menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Menu</a>

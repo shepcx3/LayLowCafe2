@@ -83,23 +83,6 @@ if (tablist) {
   });
 }
 
-// Seasonal pop-up: slides in shortly after load, and stays closed once a visitor closes it.
-// Storage can be unavailable (private mode, blocked cookies); then it just shows each visit.
-const pop = document.querySelector(".pop[data-pop-id]");
-if (pop) {
-  const key = "pop-closed:" + pop.dataset.popId;
-  let closed = false;
-  try { closed = localStorage.getItem(key) === "1"; } catch {}
-  if (!closed) setTimeout(() => (pop.hidden = false), 1200);
-  pop.querySelector(".pop-close").addEventListener("click", () => {
-    try { localStorage.setItem(key, "1"); } catch {}
-    pop.classList.add("is-leaving");
-    pop.addEventListener("animationend", () => (pop.hidden = true), { once: true });
-    // Reduced-motion users get no animation, so hide straight away
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) pop.hidden = true;
-  });
-}
-
 // Late Night: hide events once their day is over (Kingston time), so the list never goes stale.
 const eventList = document.querySelector("[data-events]");
 if (eventList) {
