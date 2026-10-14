@@ -37,6 +37,8 @@ python3 -m http.server 8080
 
 **Photos.** The page uses one hero photo, `assets/img/brunch-spread.jpg`. The other photos in `assets/img/` are spares for swapping in. Keep photos at roughly 1200px on the long edge and JPEG quality 80.
 
+After changing `styles.css` or `main.js`, bump the `?v=` number on their links in each HTML file (e.g. `?v=4` to `?v=5`). Otherwise visitors' browsers can keep using the old copy for a while.
+
 Every link and asset path is relative. Keep it that way, so the site works on the real domain, on a GitHub Pages subfolder and when opened straight from disk.
 
 ## Hosting: GitHub Pages + laylowcafe.ca
