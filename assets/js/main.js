@@ -4,13 +4,13 @@ document.documentElement.classList.add("js");
 // Opening hours in 24h time, Kingston local time. Index 0 = Sunday.
 // Keep in sync with the hours text and the JSON-LD in index.html.
 const HOURS = [
-  [7, 17], // Sun
-  [7, 17], // Mon
-  [7, 17], // Tue
-  [7, 17], // Wed
-  [7, 17], // Thu
-  [7, 17], // Fri
-  [7, 17], // Sat
+  [7, 16], // Sun
+  [7, 16], // Mon
+  [7, 16], // Tue
+  [7, 16], // Wed
+  [7, 16], // Thu
+  [7, 16], // Fri
+  [7, 16], // Sat
 ];
 
 function kingstonNow() {
@@ -81,6 +81,35 @@ if (tablist) {
       next.focus();
     });
   });
+}
+
+// Seasonal pop-up: slides in shortly after load, and stays closed once a visitor closes it.
+// Storage can be unavailable (private mode, blocked cookies); then it just shows each visit.
+const pop = document.querySelector(".pop[data-pop-id]");
+if (pop) {
+  const key = "pop-closed:" + pop.dataset.popId;
+  let closed = false;
+  try { closed = localStorage.getItem(key) === "1"; } catch {}
+  if (!closed) setTimeout(() => (pop.hidden = false), 1200);
+  pop.querySelector(".pop-close").addEventListener("click", () => {
+    try { localStorage.setItem(key, "1"); } catch {}
+    pop.classList.add("is-leaving");
+    pop.addEventListener("animationend", () => (pop.hidden = true), { once: true });
+    // Reduced-motion users get no animation, so hide straight away
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) pop.hidden = true;
+  });
+}
+
+// Late Night: hide events once their day is over (Kingston time), so the list never goes stale.
+const eventList = document.querySelector("[data-events]");
+if (eventList) {
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto" }).format(new Date()); // YYYY-MM-DD
+  eventList.querySelectorAll("[data-date]").forEach((li) => {
+    if (li.dataset.date < today) li.remove();
+  });
+  if (!eventList.querySelector("[data-date]")) {
+    document.querySelector("[data-events-empty]").hidden = false;
+  }
 }
 
 // Footer year

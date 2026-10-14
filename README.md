@@ -5,8 +5,9 @@ Website for Lay Low Cafe, 241 Princess St, Kingston, ON. Served at https://laylo
 It's plain HTML, CSS and a little JavaScript. There's no build step and no framework, so any static host can serve the repo as it is.
 
 ```
-index.html              the whole site: hero, menu, visit (map, hours, phone)
-menu/ events/ contact-us/   tiny redirects so the old GoDaddy URLs still work
+index.html              the cafe page: hero, menu, visit (map, hours, phone), fall pop-up
+late-night/index.html   Late Night @ Lay Low: events and private bookings (dark theme)
+menu/ events/ contact-us/   tiny redirects so the old GoDaddy URLs still work (events/ goes to late-night/)
 404.html
 assets/css/styles.css   all styles; colours and fonts are at the top in :root
 assets/js/main.js       open-now badge, menu tabs
@@ -28,7 +29,11 @@ python3 -m http.server 8080
 **Hours.** Hours appear in three places. Update all three:
 1. The `HOURS` array in `assets/js/main.js`. This drives the "Open now" badge.
 2. The JSON-LD `openingHoursSpecification` near the top of `index.html`. Google reads this.
-3. The "When" line in the Visit section, plus the "7–5" sticker in the hero.
+3. The "When" line in the Visit section, plus the "7–4" sticker in the hero.
+
+**Events.** Edit the event list in `late-night/index.html`. The comment above the list explains how. Each event has a `data-date` and hides itself automatically once its day has passed. When none are left, the page says new events are on the way. Also update the matching JSON-LD entry at the top of that file so Google shows the event.
+
+**Seasonal pop-up.** The fall drinks card is the `<aside class="pop">` near the bottom of `index.html`. Edit the text there. A visitor who closes it won't see it again. For next season's card, change `data-pop-id` (e.g. to `winter-2026`) so everyone sees the new one. Delete the `<aside>` to turn the pop-up off.
 
 **Photos.** The page uses one hero photo, `assets/img/brunch-spread.jpg`. The other photos in `assets/img/` are spares for swapping in. Keep photos at roughly 1200px on the long edge and JPEG quality 80.
 
