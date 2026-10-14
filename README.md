@@ -5,13 +5,11 @@ Website for Lay Low Cafe, 241 Princess St, Kingston, ON. Served at https://laylo
 It's plain HTML, CSS and a little JavaScript. There's no build step and no framework, so any static host can serve the repo as it is.
 
 ```
-index.html              Home
-menu/index.html         /menu        (same URLs as the old GoDaddy site)
-events/index.html       /events
-contact-us/index.html   /contact-us
+index.html              the whole site: hero, menu, visit (map, hours, phone)
+menu/ events/ contact-us/   tiny redirects so the old GoDaddy URLs still work
 404.html
 assets/css/styles.css   all styles; colours and fonts are at the top in :root
-assets/js/main.js       open-now badge, mobile nav, scroll effects
+assets/js/main.js       open-now badge, menu tabs
 assets/img/             photos, logo, icons
 .nojekyll               tells GitHub Pages to serve files as-is
 ```
@@ -25,29 +23,16 @@ python3 -m http.server 8080
 
 ## Common edits
 
-**Menu.** Edit `menu/index.html`. Each dish is one `<li class="menu-item">` with its name, price and description. Copy an existing item and change it. The comment at the top of the menu explains the VG / V / GF tags and the shorter drink rows.
+**Menu.** Edit the `#menu` section of `index.html`. Each category is one tab panel, and each item is one `<li>` with its name, price and description. Copy an existing item and change it. The comment above the tabs explains the VG / V / GF tags.
 
-**Hours.** Hours appear in four places. Update all four:
+**Hours.** Hours appear in three places. Update all three:
 1. The `HOURS` array in `assets/js/main.js`. This drives the "Open now" badge.
-2. The JSON-LD `openingHoursSpecification` in `index.html`. Google reads this.
-3. The hours table in `contact-us/index.html`.
-4. The footer in every page, plus the "7–5" sticker and the text on the home page.
+2. The JSON-LD `openingHoursSpecification` near the top of `index.html`. Google reads this.
+3. The "When" line in the Visit section, plus the "7–5" sticker in the hero.
 
-**Photos.** Add the JPEG to `assets/img/`, at roughly 1200px on the long edge and quality 80. Then update the `src`, `alt`, `width` and `height` attributes.
+**Photos.** The page uses one hero photo, `assets/img/brunch-spread.jpg`. The other photos in `assets/img/` are spares for swapping in. Keep photos at roughly 1200px on the long edge and JPEG quality 80.
 
-Every link and asset path is relative, for example `assets/...` on the home page and `../assets/...` in sub-pages. Keep it that way, so the site works on the real domain, on a GitHub Pages subfolder and when opened straight from disk. A path starting with `/` breaks the styling everywhere except the domain root.
-
-The header, footer and mobile action bar are repeated in each page. If you change one, change it in all of them, or search the whole project for the text.
-
-## Contact form (Formspree)
-
-GitHub Pages can't process forms, so the contact form posts to [Formspree](https://formspree.io). Formspree's free plan covers 50 messages a month, and it emails each submission on.
-
-1. Sign up at formspree.io with the inbox that should receive messages. This can be yours until the cafe has one.
-2. Create a form and copy its ID, the part after `/f/` in the endpoint.
-3. In `contact-us/index.html`, replace `YOUR_FORM_ID` in the form's `action`.
-
-Until that's done, the form tells visitors to call or DM instead of failing silently.
+Every link and asset path is relative. Keep it that way, so the site works on the real domain, on a GitHub Pages subfolder and when opened straight from disk.
 
 ## Hosting: GitHub Pages + laylowcafe.ca
 
@@ -68,7 +53,7 @@ Don't add the `CNAME` file before DNS points at GitHub. If you do, the staging U
 
 **After launch:**
 - In Google Search Console, verify the domain and submit `https://laylowcafe.ca/sitemap.xml`.
-- In Google Business Profile, make sure the website, hours and menu link (`/menu/`) match the site.
+- In Google Business Profile, make sure the website, hours and menu link (`https://laylowcafe.ca/#menu`) match the site.
 - Put the website link in the Instagram and TikTok bios.
 
 **Notes:**

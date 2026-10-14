@@ -1,8 +1,8 @@
-// Lay Low Cafe — small progressive enhancements. The site works without JS.
+// Lay Low Cafe — small progressive enhancements. The page works without JS.
 document.documentElement.classList.add("js");
 
 // Opening hours in 24h time, Kingston local time. Index 0 = Sunday.
-// Keep in sync with the hours shown in the HTML and the JSON-LD in each page.
+// Keep in sync with the hours text and the JSON-LD in index.html.
 const HOURS = [
   [7, 17], // Sun
   [7, 17], // Mon
@@ -41,116 +41,45 @@ function openStatus() {
     return { open: false, label: `Opens today at ${fmt(open)}` };
   }
   const [nextOpen] = HOURS[(day + 1) % 7];
-  return { open: false, label: `Closed · opens ${fmt(nextOpen)} tomorrow` };
+  return { open: false, label: `Closed · opens ${fmt(nextOpen)}` };
 }
 
-// Live open/closed pills
+// Live open/closed pill
 const status = openStatus();
 document.querySelectorAll("[data-open-status]").forEach((el) => {
   el.classList.add(status.open ? "is-open" : "is-closed");
-  const label = el.querySelector(".label");
-  if (label) label.textContent = status.label;
+  el.querySelector(".label").textContent = status.label;
 });
-
-// Highlight today in hours tables
-const today = kingstonNow().day;
-document.querySelectorAll("[data-day]").forEach((row) => {
-  if (Number(row.dataset.day) === today) row.classList.add("is-today");
-});
-
-// Mobile nav
-const toggle = document.querySelector(".menu-toggle");
-const nav = document.getElementById("site-nav");
-if (toggle && nav) {
-  toggle.addEventListener("click", () => {
-    const open = toggle.getAttribute("aria-expanded") === "true";
-    toggle.setAttribute("aria-expanded", String(!open));
-    nav.classList.toggle("is-open", !open);
-  });
-  nav.addEventListener("click", (e) => {
-    if (e.target.closest("a")) {
-      toggle.setAttribute("aria-expanded", "false");
-      nav.classList.remove("is-open");
-    }
-  });
-}
 
 // Header border once scrolled
 const header = document.querySelector(".site-header");
-if (header) {
-  const onScroll = () => header.classList.toggle("is-scrolled", window.scrollY > 8);
-  onScroll();
-  window.addEventListener("scroll", onScroll, { passive: true });
-}
+const onScroll = () => header.classList.toggle("is-scrolled", window.scrollY > 8);
+onScroll();
+window.addEventListener("scroll", onScroll, { passive: true });
 
-// Reveal on scroll
-if ("IntersectionObserver" in window) {
-  const io = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("is-visible");
-          io.unobserve(entry.target);
-        }
-      });
-    },
-    { rootMargin: "0px 0px -10% 0px" }
-  );
-  document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
-} else {
-  document.querySelectorAll(".reveal").forEach((el) => el.classList.add("is-visible"));
-}
-
-// Menu page: highlight the category chip for the section in view
-const menuLinks = document.querySelectorAll(".menu-nav a");
-if (menuLinks.length && "IntersectionObserver" in window) {
-  const byId = new Map([...menuLinks].map((a) => [a.hash.slice(1), a]));
-  const spy = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        menuLinks.forEach((a) => a.classList.remove("is-active"));
-        const link = byId.get(entry.target.id);
-        if (link) {
-          link.classList.add("is-active");
-          link.scrollIntoView({ block: "nearest", inline: "center" });
-        }
-      });
-    },
-    { rootMargin: "-40% 0px -55% 0px" }
-  );
-  document.querySelectorAll(".menu-section").forEach((s) => spy.observe(s));
-}
-
-// Contact form: send to Formspree in the background and show the result inline
-const form = document.querySelector("[data-contact-form]");
-if (form) {
-  const status = form.querySelector("[data-form-status]");
-  const button = form.querySelector("button[type=submit]");
-  const fallback = 'Sorry, that didn\'t send. Please call us at <a href="tel:+16135469080">(613) 546-9080</a> or DM <a href="https://www.instagram.com/laylowcafe/">@laylowcafe</a>.';
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    if (form.action.includes("YOUR_FORM_ID")) {
-      status.innerHTML = "The contact form isn't connected yet. " + fallback.replace("Sorry, that didn't send. ", "");
-      return;
-    }
-    button.disabled = true;
-    button.textContent = "Sending…";
-    try {
-      const res = await fetch(form.action, {
-        method: "POST",
-        body: new FormData(form),
-        headers: { Accept: "application/json" },
-      });
-      if (!res.ok) throw new Error(res.status);
-      form.reset();
-      status.textContent = "Thanks, we got it! We'll get back to you soon.";
-    } catch {
-      status.innerHTML = fallback;
-    } finally {
-      button.disabled = false;
-      button.textContent = "Send message";
-    }
+// Menu tabs. Without JS every category simply shows, one after another.
+const tablist = document.querySelector('[role="tablist"]');
+if (tablist) {
+  const tabs = [...tablist.querySelectorAll('[role="tab"]')];
+  const select = (tab) => {
+    tabs.forEach((t) => {
+      const on = t === tab;
+      t.setAttribute("aria-selected", String(on));
+      t.tabIndex = on ? 0 : -1;
+      document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+    });
+  };
+  tablist.hidden = false;
+  select(tabs[0]);
+  tabs.forEach((tab, i) => {
+    tab.addEventListener("click", () => select(tab));
+    tab.addEventListener("keydown", (e) => {
+      const step = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
+      if (!step) return;
+      const next = tabs[(i + step + tabs.length) % tabs.length];
+      select(next);
+      next.focus();
+    });
   });
 }
 
