@@ -45,18 +45,22 @@ Every link and asset path is relative. Keep it that way, so the site works on th
 
 The site is deployed with GitHub Pages: Settings → Pages, deploy from a branch, branch root `/`. GitHub Pages can stay the permanent host. Websites + Marketing is a site builder and can't serve custom code. The domain stays registered at GoDaddy. Only the DNS records change so that they point at GitHub Pages.
 
-**Going live on the real domain**, once the owner approves the staging version:
+**Going live on the real domain** (best done after the cafe closes at 4pm):
 
-1. **Disconnect at GoDaddy.** Disconnect the domain from the Websites + Marketing site. If you skip this, GoDaddy may keep rewriting the records.
-2. **Edit the DNS records** at GoDaddy: My Products, then the domain, then DNS.
-   - Replace the `A` records for `@` with GitHub's four: `185.199.108.153`, `185.199.109.153`, `185.199.110.153` and `185.199.111.153`.
-   - Set the `CNAME` record for `www` to `shepcx3.github.io`.
-   - **Don't touch MX, TXT (SPF/DKIM) or other email records.**
-3. **Set the custom domain** in the repo's Settings → Pages to `laylowcafe.ca`. GitHub commits a `CNAME` file for you. Tick **Enforce HTTPS** once the certificate is issued, which can take up to an hour.
-4. **Optional:** verify the domain in your GitHub account settings, under Pages. This stops anyone else from claiming it.
-5. **Cancel the old plan.** Once the new site is live, cancel the Websites + Marketing plan. Keep the domain registration.
+1. **Back up the current DNS.** In GoDaddy, go to My Products, then laylowcafe.ca, then DNS, and screenshot every record. That screenshot is the rollback plan.
+2. **Verify the domain with GitHub.** In your GitHub account, go to Settings, then Pages, then Add a domain, and enter `laylowcafe.ca`. GitHub gives you a `TXT` record. Add it in GoDaddy DNS and click Verify. This stops anyone else from pointing the domain at their own site.
+3. **Set the custom domain.** In the repo, go to Settings, then Pages, then Custom domain. Enter `laylowcafe.ca` and save. GitHub commits a `CNAME` file. The github.io link starts redirecting to laylowcafe.ca, which shows the old site until step 5 finishes.
+4. **Disconnect Websites + Marketing.** In GoDaddy, open the Websites + Marketing site settings and disconnect or remove the domain, so GoDaddy stops managing its records. Also check that domain Forwarding is off.
+5. **Edit the DNS records in GoDaddy:**
+   - `A` records for `@`: delete the existing ones and add four, pointing to `185.199.108.153`, `185.199.109.153`, `185.199.110.153` and `185.199.111.153`.
+   - `AAAA` records for `@`: delete any. Optionally, add GitHub's IPv6 addresses `2606:50c0:8000::153`, `2606:50c0:8001::153`, `2606:50c0:8002::153` and `2606:50c0:8003::153`.
+   - `CNAME` for `www`: set it to `shepcx3.github.io`.
+   - **Leave MX, TXT (SPF/DKIM/verification) and any email-related `CNAME` records exactly as they are.**
+6. **Turn on HTTPS.** Once Settings → Pages shows "DNS check successful", tick **Enforce HTTPS**. The certificate can take up to an hour. Until then the box may be greyed out.
+7. **Check the live site.** Open `https://laylowcafe.ca`, `https://www.laylowcafe.ca`, `https://laylowcafe.ca/menu` and `https://laylowcafe.ca/late-night/` on a phone using mobile data, plus a computer.
+8. **Cancel the old plan.** After a few days of the new site running fine, cancel the Websites + Marketing plan. **Keep the domain registration** and any email plan.
 
-Don't add the `CNAME` file before DNS points at GitHub. If you do, the staging URL will redirect to laylowcafe.ca, which still shows the old GoDaddy site.
+**Rollback:** if something goes wrong, put back the records from the step 1 screenshot and remove the custom domain in Settings → Pages.
 
 **After launch:**
 - In Google Search Console, verify the domain and submit `https://laylowcafe.ca/sitemap.xml`.
