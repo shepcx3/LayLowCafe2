@@ -104,7 +104,7 @@ p { margin: 0 0 1em; }
 .site-header.is-scrolled { border-bottom-color: var(--line); }
 .site-header .container {
   height: var(--header-h);
-  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  display: flex; align-items: center; justify-content: center; gap: clamp(14px, 4vw, 32px);
 }
 .brand img { height: 28px; width: auto; }
 /* The one link in the bar: a little preview of the night side */

@@ -1,6 +1,7 @@
-// Lay Low Cafe — opening animation.
-// A line-art disco ball spins and sparkles, its mirror tiles fly apart and
-// re-form as the LAY LOW logo, and the logo drops into its place in the header.
+// Lay Low Cafe — opening animation (about 2 seconds).
+// One continuous motion: a line-art disco ball drops in spinning and sparkling,
+// stretches and melts into the LAY LOW logo while still turning, then the logo
+// falls back into its place in the header as the page appears.
 //
 // The tiny script in <head> adds html.intro (which hides the page) only when the
 // intro should play: once per browser tab, never with reduced motion. This file
@@ -12,8 +13,8 @@
 
   const INK = "#1f1c16";
   const GOLD = "#f3b53b";
-  const BG = "#f6efe1";
-  const T = { spin: 1700, morph: 950, fade: 350, fly: 800 }; // ms
+  // Timeline in ms. Phases overlap slightly so the motion never stops.
+  const T = { morphStart: 750, morphEnd: 1450, landEnd: 2150 };
 
   const brand = document.querySelector(".brand img");
   const overlay = document.createElement("div");
@@ -29,203 +30,149 @@
 
   const ctx = canvas.getContext("2d");
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  let W, H, cx, cy, R;
-  function resize() {
+  let W, H, cx, cy, R, logoRect;
+  const logo = new Image();
+  logo.src = brand ? brand.currentSrc || brand.src : "assets/img/logo.png";
+
+  function layout() {
     W = innerWidth; H = innerHeight;
     canvas.width = W * dpr; canvas.height = H * dpr;
     canvas.style.width = W + "px"; canvas.style.height = H + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    R = Math.min(W, H) * 0.24;
-    cx = W / 2; cy = H / 2 + R * 0.12;
+    R = Math.min(W, H) * 0.22;
+    cx = W / 2; cy = H / 2;
+    const w = Math.min(W * 0.72, 520);
+    const h = w * ((logo.naturalHeight / logo.naturalWidth) || 0.253);
+    logoRect = { x: cx - w / 2, y: cy - h / 2, w, h };
   }
-  resize();
 
-  // ---------- Sphere geometry ----------
-  const TILT = 0.32;                 // look slightly down on the ball
-  const LATS = 12, LONGS = 18;       // grid of mirror tiles
+  // ---------- easing ----------
+  const clamp = (v) => Math.min(Math.max(v, 0), 1);
+  const lerp = (a, b, u) => a + (b - a) * u;
+  const smooth = (a, b, v) => { const u = clamp((v - a) / (b - a)); return u * u * (3 - 2 * u); };
+  const easeOut = (u) => 1 - Math.pow(1 - u, 3);
+  const easeInOut = (u) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2);
+
+  // ---------- disco ball ----------
+  const TILT = 0.32, LATS = 12, LONGS = 18;
   const lat = (i) => -Math.PI / 2 + (i / LATS) * Math.PI;
   const lon = (j, rot) => (j / LONGS) * Math.PI * 2 + rot;
-
   function project(la, lo) {
-    const x = Math.cos(la) * Math.sin(lo);
-    const y = Math.sin(la);
-    const z = Math.cos(la) * Math.cos(lo);
-    // rotate around X by TILT
-    const y2 = y * Math.cos(TILT) - z * Math.sin(TILT);
-    const z2 = y * Math.sin(TILT) + z * Math.cos(TILT);
-    return { x: cx + x * R, y: cy - y2 * R, z: z2 };
+    const x = Math.cos(la) * Math.sin(lo), y = Math.sin(la), z = Math.cos(la) * Math.cos(lo);
+    return { x: x * R, y: -(y * Math.cos(TILT) - z * Math.sin(TILT)) * R, z: y * Math.sin(TILT) + z * Math.cos(TILT) };
   }
-
-  function strokePath(points, alpha) {
-    ctx.globalAlpha = alpha;
-    ctx.beginPath();
-    points.forEach((p, k) => (k ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
-    ctx.stroke();
-  }
-
-  // Draw a curve in front and back halves (back half faint, for depth)
-  function strokeCurve(sample) {
+  function curve(sample) {
+    // front half solid, back half faint, for depth
     let run = [], front = null;
-    for (let s = 0; s <= 48; s++) {
-      const p = sample(s / 48);
-      const isFront = p.z > 0;
-      if (front !== null && isFront !== front) {
-        run.push(p);
-        strokePath(run, front ? 1 : 0.12);
-        run = [];
-      }
-      run.push(p);
-      front = isFront;
+    const flush = () => { ctx.globalAlpha = (front ? 1 : 0.12) * ballAlpha; ctx.beginPath(); run.forEach((p, k) => (k ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.stroke(); };
+    for (let s = 0; s <= 40; s++) {
+      const p = sample(s / 40), f = p.z > 0;
+      if (front !== null && f !== front) { run.push(p); flush(); run = []; }
+      run.push(p); front = f;
     }
-    strokePath(run, front ? 1 : 0.12);
+    flush();
   }
-
-  // Twinkling tiles: [latIndex, lonIndex, born]
+  let ballAlpha = 1;
   const flashes = [];
-  function drawBall(rot, t) {
-    // string
-    const top = project(Math.PI / 2, 0);
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = INK;
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, top.y); ctx.stroke();
-
-    // tile flashes (behind the grid lines)
-    if (Math.random() < 0.55) flashes.push([1 + Math.floor(Math.random() * (LATS - 2)), Math.floor(Math.random() * LONGS), t]);
+  function drawBall(rot, now) {
+    if (Math.random() < 0.5) flashes.push([1 + Math.floor(Math.random() * (LATS - 2)), Math.floor(Math.random() * LONGS), now]);
     for (let k = flashes.length - 1; k >= 0; k--) {
-      const [i, j, born] = flashes[k];
-      const age = (t - born) / 450;
+      const [i, j, born] = flashes[k], age = (now - born) / 380;
       if (age > 1) { flashes.splice(k, 1); continue; }
       const c = [project(lat(i), lon(j, rot)), project(lat(i + 1), lon(j, rot)), project(lat(i + 1), lon(j + 1, rot)), project(lat(i), lon(j + 1, rot))];
       if (c.some((p) => p.z <= 0.05)) continue;
-      ctx.globalAlpha = Math.sin(age * Math.PI) * 0.85;
+      ctx.globalAlpha = Math.sin(age * Math.PI) * 0.8 * ballAlpha;
       ctx.fillStyle = GOLD;
       ctx.beginPath(); c.forEach((p, n) => (n ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.fill();
     }
-
-    // grid
     ctx.strokeStyle = INK;
-    ctx.lineWidth = 1.8;
-    for (let i = 1; i < LATS; i++) strokeCurve((u) => project(lat(i), u * Math.PI * 2));
-    for (let j = 0; j < LONGS; j++) strokeCurve((u) => project(-Math.PI / 2 + u * Math.PI, lon(j, rot)));
-
-    // outline
-    ctx.globalAlpha = 1;
-    ctx.lineWidth = 2.4;
-    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+    for (let i = 1; i < LATS; i++) curve((u) => project(lat(i), u * Math.PI * 2));
+    for (let j = 0; j < LONGS; j++) curve((u) => project(-Math.PI / 2 + u * Math.PI, lon(j, rot)));
   }
 
-  // Four-point sparkles around the ball, like the reference art
+  // Four-point sparkles, like the reference art
   const sparkles = [
-    { dx: -1.25, dy: -0.95, s: 0.26, p: 0 },
-    { dx: -0.78, dy: -0.88, s: 0.12, p: 0.35 },
-    { dx: -1.05, dy: -0.55, s: 0.15, p: 0.7 },
-    { dx: 1.12, dy: 0.95, s: 0.2, p: 0.5 },
-    { dx: 1.2, dy: -0.75, s: 0.1, p: 0.15 },
+    { a: -2.35, d: 1.45, s: 0.24, p: 0 }, { a: -2.0, d: 1.2, s: 0.11, p: 0.3 },
+    { a: -2.75, d: 1.3, s: 0.14, p: 0.6 }, { a: 0.75, d: 1.45, s: 0.19, p: 0.45 }, { a: -0.6, d: 1.4, s: 0.1, p: 0.8 },
   ];
-  function sparkle(x, y, size) {
-    ctx.beginPath();
-    ctx.moveTo(x, y - size);
-    ctx.quadraticCurveTo(x, y, x + size, y);
-    ctx.quadraticCurveTo(x, y, x, y + size);
-    ctx.quadraticCurveTo(x, y, x - size, y);
-    ctx.quadraticCurveTo(x, y, x, y - size);
-    ctx.stroke();
-  }
-  function drawSparkles(t, fadeOut) {
-    ctx.strokeStyle = INK;
-    ctx.lineWidth = 2;
+  function drawSparkles(now, burst, alpha) {
+    ctx.strokeStyle = INK; ctx.lineWidth = 2;
     sparkles.forEach((s) => {
-      const pulse = 0.65 + 0.35 * Math.sin((t / 260) + s.p * Math.PI * 2);
-      ctx.globalAlpha = (1 - fadeOut);
-      sparkle(cx + s.dx * R, cy + s.dy * R, s.s * R * pulse);
+      const pulse = 0.7 + 0.3 * Math.sin(now / 160 + s.p * 6.28);
+      const d = s.d * R * (1 + burst * 0.8);
+      const x = cx + Math.cos(s.a) * d, y = cy + Math.sin(s.a) * d, size = s.s * R * pulse * (1 + burst * 0.6);
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.moveTo(x, y - size);
+      ctx.quadraticCurveTo(x, y, x + size, y); ctx.quadraticCurveTo(x, y, x, y + size);
+      ctx.quadraticCurveTo(x, y, x - size, y); ctx.quadraticCurveTo(x, y, x, y - size);
+      ctx.stroke();
     });
   }
 
-  // ---------- Logo target points ----------
-  const logo = new Image();
-  logo.src = brand ? brand.currentSrc || brand.src : "assets/img/logo.png";
-  let targets = [], logoRect;
-  function buildTargets() {
-    const w = Math.min(W * 0.78, 560);
-    const h = w * (logo.naturalHeight / logo.naturalWidth || 0.253);
-    logoRect = { x: cx - w / 2, y: H / 2 - h / 2, w, h };
-    const off = document.createElement("canvas");
-    off.width = Math.round(w); off.height = Math.round(h);
-    const o = off.getContext("2d");
-    o.drawImage(logo, 0, 0, off.width, off.height);
-    const data = o.getImageData(0, 0, off.width, off.height).data;
-    const step = Math.max(3, Math.round(w / 150));
-    for (let y = 0; y < off.height; y += step)
-      for (let x = 0; x < off.width; x += step)
-        if (data[(y * off.width + x) * 4 + 3] > 140) targets.push({ x: logoRect.x + x, y: logoRect.y + y });
-  }
-
-  // Particles start on the visible tile corners of the ball
-  function buildParticles(rot) {
-    const starts = [];
-    for (let i = 1; i < LATS; i++)
-      for (let j = 0; j < LONGS * 2; j++) {
-        const p = project(lat(i), (j / (LONGS * 2)) * Math.PI * 2 + rot);
-        if (p.z > 0) starts.push(p);
-      }
-    // add points along the outline so the silhouette dissolves too
-    for (let a = 0; a < 60; a++) starts.push({ x: cx + Math.cos(a / 60 * Math.PI * 2) * R, y: cy + Math.sin(a / 60 * Math.PI * 2) * R });
-    const shuffled = targets.slice().sort(() => Math.random() - 0.5);
-    return shuffled.map((tgt, k) => {
-      const s = starts[k % starts.length];
-      return { sx: s.x, sy: s.y, tx: tgt.x, ty: tgt.y, delay: Math.random() * 0.35, spin: Math.random() * Math.PI };
-    });
-  }
-
-  const ease = (u) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2);
-
-  // ---------- Timeline ----------
-  let start = null, particles = null, done = false, raf;
-  const rotAt = (t) => t / 520; // radians
+  // ---------- timeline ----------
+  let start = null, raf, done = false, landing = false;
+  // Spin fast, then let the spin ease off as the ball becomes the logo
+  const rotAt = (t) => (t < T.morphStart ? t / 210 : T.morphStart / 210 + ((t - T.morphStart) / 210) * (1 - 0.5 * clamp((t - T.morphStart) / (T.morphEnd - T.morphStart))));
 
   function frame(now) {
-    if (done) return;
+    if (done || landing) return;
     if (start === null) start = now;
     const t = now - start;
     ctx.clearRect(0, 0, W, H);
 
-    if (t < T.spin) {
-      // ball eases in from slightly above, then spins
-      const drop = Math.min(t / 600, 1);
-      ctx.save();
-      ctx.translate(0, -(1 - ease(drop)) * R * 0.5);
-      drawBall(rotAt(t), now);
-      ctx.restore();
-      drawSparkles(now, 0);
-    } else if (t < T.spin + T.morph + T.fade) {
-      if (!particles) particles = buildParticles(rotAt(T.spin));
-      const m = Math.min((t - T.spin) / T.morph, 1);
-      const fade = Math.max((t - T.spin - T.morph) / T.fade, 0);
-      drawSparkles(now, Math.min(m * 2, 1));
-      ctx.fillStyle = INK;
-      particles.forEach((p) => {
-        const u = ease(Math.min(Math.max((m - p.delay) / (1 - 0.35), 0), 1));
-        // arc outward a little on the way, like tiles flung off the ball
-        const bow = Math.sin(u * Math.PI) * R * 0.25;
-        const x = p.sx + (p.tx - p.sx) * u + Math.cos(p.spin) * bow;
-        const y = p.sy + (p.ty - p.sy) * u + Math.sin(p.spin) * bow;
-        const size = 4 - u * 1.2;
-        ctx.globalAlpha = 1 - fade;
-        ctx.fillRect(x - size / 2, y - size / 2, size, size);
-        if (u < 0.9 && Math.random() < 0.02) { ctx.fillStyle = GOLD; ctx.fillRect(x - 2, y - 2, 4, 4); ctx.fillStyle = INK; }
-      });
-      ctx.globalAlpha = fade;
-      ctx.drawImage(logo, logoRect.x, logoRect.y, logoRect.w, logoRect.h);
-    } else {
-      return fly();
+    // Let the page lay out and paint behind the opaque overlay early, so the
+    // landing isn't held up by the browser's first full-page paint.
+    if (t > 120 && root.classList.contains("intro")) {
+      root.classList.remove("intro");
+      if (brand) brand.style.visibility = "hidden";
     }
+
+    // m: 0 = round ball, 1 = logo shape
+    const m = easeInOut(clamp((t - T.morphStart) / (T.morphEnd - T.morphStart)));
+    const drop = easeOut(clamp(t / 450));
+    const ballY = lerp(-R * 0.6, 0, drop);
+
+    // The ball's silhouette stretches into the logo's proportions
+    const sx = lerp(1, (logoRect.w / 2) / R, m);
+    const sy = lerp(1, (logoRect.h / 2) / R, m);
+
+    // string retracts as the ball morphs
+    ctx.globalAlpha = 1 - smooth(0, 0.4, m);
+    ctx.strokeStyle = INK; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, cy + ballY - R * sy * 0.95); ctx.stroke();
+
+    // ball (grid + outline), squashed by sx/sy, fading as the letters arrive
+    ballAlpha = 1 - smooth(0.4, 0.9, m);
+    ctx.save();
+    ctx.translate(cx, cy + ballY);
+    ctx.scale(sx, sy);
+    ctx.lineWidth = 1.8 / Math.sqrt(sx * sy);
+    drawBall(rotAt(t), now);
+    ctx.globalAlpha = ballAlpha;
+    ctx.lineWidth = 2.4 / Math.sqrt(sx * sy);
+    ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+
+    // the logo grows out of the squashed ball
+    const la = smooth(0.35, 0.88, m);
+    if (la > 0) {
+      const k = lerp(0.9, 1, la);
+      ctx.globalAlpha = la;
+      ctx.drawImage(logo, cx - (logoRect.w * k) / 2, cy - (logoRect.h * k) / 2, logoRect.w * k, logoRect.h * k);
+    }
+
+    drawSparkles(now, smooth(0, 1, m), 1 - smooth(0.3, 0.8, m));
     ctx.globalAlpha = 1;
+
+    if (m > 0.97) return land();
     raf = requestAnimationFrame(frame);
   }
 
-  // The logo drops from the centre of the screen into the header
-  function fly() {
+  // The finished logo falls back into the header while the page appears
+  function land() {
+    landing = true;
+    cancelAnimationFrame(raf);
     ctx.clearRect(0, 0, W, H);
     root.classList.remove("intro");
     const img = logo.cloneNode();
@@ -235,18 +182,25 @@
     if (!brand) return finish();
     brand.style.visibility = "hidden";
     const b = brand.getBoundingClientRect();
-    const scale = b.width / logoRect.w;
+    const s = b.width / logoRect.w;
     const dx = b.left - logoRect.x, dy = b.top - logoRect.y;
+    const dur = T.landEnd - T.morphEnd;
+    // Per-keyframe easing: a quick start, a small overshoot, then a soft settle
     img.animate(
       [
-        { transform: "translate(0, 0) scale(1)" },
-        { transform: `translate(${dx}px, ${dy - 14}px) scale(${scale})`, offset: 0.8 },
-        { transform: `translate(${dx}px, ${dy}px) scale(${scale})` },
+        { transform: "translate(0, 0) scale(1)", easing: "cubic-bezier(0.5, 0, 0.25, 1)" },
+        { transform: `translate(${dx - b.width * 0.03}px, ${dy - b.height * 0.03}px) scale(${s * 1.06})`, offset: 0.7, easing: "ease-in-out" },
+        { transform: `translate(${dx + b.width * 0.01}px, ${dy + b.height * 0.01}px) scale(${s * 0.98})`, offset: 0.86, easing: "ease-out" },
+        { transform: `translate(${dx}px, ${dy}px) scale(${s})` },
       ],
-      { duration: T.fly, easing: "cubic-bezier(0.65, 0, 0.35, 1)", fill: "forwards" }
+      { duration: dur, fill: "forwards" }
     );
-    overlay.animate([{ backgroundColor: BG }, { backgroundColor: "rgba(246, 239, 225, 0)" }], { duration: T.fly, easing: "ease-in", fill: "forwards" });
-    setTimeout(finish, T.fly);
+    // Fade only the backdrop, so the logo stays solid while it lands
+    overlay.animate(
+      [{ backgroundColor: "rgba(246, 239, 225, 1)" }, { backgroundColor: "rgba(246, 239, 225, 0)" }],
+      { duration: dur, easing: "ease-out", fill: "forwards" }
+    );
+    setTimeout(finish, dur);
   }
 
   function finish() {
@@ -263,9 +217,9 @@
   skip.addEventListener("click", finish);
   overlay.addEventListener("pointerdown", finish);
   addEventListener("keydown", finish);
-  addEventListener("resize", () => { if (!particles) { resize(); targets = []; if (logo.complete) buildTargets(); } });
+  addEventListener("resize", () => { if (!landing) layout(); });
 
-  const go = () => { buildTargets(); raf = requestAnimationFrame(frame); };
+  const go = () => { layout(); raf = requestAnimationFrame(frame); };
   if (logo.complete && logo.naturalWidth) go();
   else { logo.onload = go; logo.onerror = finish; }
 })();
