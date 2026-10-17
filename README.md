@@ -11,6 +11,7 @@ menu/ events/ contact-us/   tiny redirects so the old GoDaddy URLs still work (e
 404.html
 assets/css/styles.css   all styles; colours and fonts are at the top in :root
 assets/js/main.js       open-now badge, menu tabs
+assets/js/intro.js      opening animation: disco ball morphs into the logo
 assets/img/             photos, logo, icons
 .nojekyll               tells GitHub Pages to serve files as-is
 ```
@@ -34,6 +35,8 @@ python3 -m http.server 8080
 **Events.** Edit the event list in `late-night/index.html`. The comment above the list explains how. Each event has a `data-date` and hides itself automatically once its day has passed. When none are left, the page says new events are on the way. Also update the matching JSON-LD entry at the top of that file so Google shows the event.
 
 **Seasonal banner.** The fall drinks strip is the `fall-banner` block at the top of `index.html`. Edit the `<span>` items in **both** `<p>` lines, which must match because the second copy makes the scroll loop seamlessly. Delete the whole block to remove it.
+
+**Opening animation.** `assets/js/intro.js` plays once per browser tab on the cafe page, and never for visitors who have reduced motion turned on. A click, tap or key press skips it. Timings are in the `T` object at the top of that file. To switch it off, delete the small inline `<script>` that adds the `intro` class and the `intro.js` script tag from the `<head>` of `index.html`.
 
 **Photos.** The page uses one hero photo, `assets/img/brunch-spread.jpg`. The other photos in `assets/img/` are spares for swapping in. Keep photos at roughly 1200px on the long edge and JPEG quality 80.
 

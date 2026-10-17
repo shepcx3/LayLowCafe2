@@ -276,6 +276,19 @@ p { margin: 0 0 1em; }
   .fall-track p[aria-hidden] { display: none; }
 }
 
+/* ---------- Opening animation (assets/js/intro.js) ---------- */
+html.intro body > * { visibility: hidden; }
+html.intro body > .intro-overlay { visibility: visible; }
+.intro-overlay { position: fixed; inset: 0; z-index: 1000; background: var(--cream); cursor: pointer; }
+.intro-overlay canvas { display: block; }
+.intro-logo { position: absolute; height: auto; transform-origin: 0 0; will-change: transform; }
+.intro-skip {
+  position: absolute; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom));
+  font: 600 0.85rem/1 var(--font-body); color: var(--ink-soft);
+  background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 0.7em 1.1em; cursor: pointer;
+}
+.intro-skip:hover { background: var(--paper); color: var(--ink); }
+
 /* ==========================================================================
    Late Night @ Lay Low — same type and layout, flipped to after-dark colours.
    Only the tokens change; components pick them up automatically.

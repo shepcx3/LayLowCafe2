@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,500..600,100,1;1,9..144,500..600,100,1&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css?v=5">
+  <link rel="stylesheet" href="assets/css/styles.css?v=6">
   <link rel="preload" as="image" href="assets/img/brunch-spread.jpg">
 
   <script type="application/ld+json">
@@ -57,7 +57,18 @@
     ]
   }
   </script>
-  <script src="assets/js/main.js?v=5" defer></script>
+  <!-- Opening animation: decide before first paint whether to play it (once per tab, never with reduced motion).
+       The timeout un-hides the page even if intro.js never loads. -->
+  <script>
+    try {
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches && !sessionStorage.getItem("intro-seen")) {
+        document.documentElement.classList.add("intro");
+        setTimeout(function () { document.documentElement.classList.remove("intro"); }, 6000);
+      }
+    } catch (e) {}
+  </script>
+  <script src="assets/js/intro.js?v=6" defer></script>
+  <script src="assets/js/main.js?v=6" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
