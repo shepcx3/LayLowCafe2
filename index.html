@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,500..600,100,1;1,9..144,500..600,100,1&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/styles.css?v=7">
+  <link rel="stylesheet" href="assets/css/styles.css?v=8">
   <link rel="preload" as="image" href="assets/img/brunch-spread.jpg">
 
   <script type="application/ld+json">
@@ -68,7 +68,7 @@
     } catch (e) {}
   </script>
   <script src="assets/js/intro.js?v=11" defer></script>
-  <script src="assets/js/main.js?v=7" defer></script>
+  <script src="assets/js/main.js?v=8" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -227,7 +227,21 @@
             <div><dt>When</dt><dd>Every day, 7am–4pm<small>Walk-ins only, no reservations</small></dd></div>
             <div><dt>Call</dt><dd><a href="tel:+16135469080">(613) 546-9080</a></dd></div>
           </dl>
-          <a class="btn btn--olive" href="https://www.google.com/maps/dir/?api=1&amp;destination=Lay+Low+Cafe+241+Princess+St+Kingston+ON" target="_blank" rel="noopener">Get directions</a>
+          <div class="btn-row">
+            <a class="btn btn--olive" href="https://www.google.com/maps/dir/?api=1&amp;destination=Lay+Low+Cafe+241+Princess+St+Kingston+ON" target="_blank" rel="noopener">Get directions</a>
+            <button class="btn btn--ghost" type="button" aria-expanded="false" aria-controls="message" data-message-toggle>Send us a message</button>
+          </div>
+          <!-- Contact form. Messages go through Formspree, which emails them on.
+               Replace YOUR_FORM_ID with the ID from formspree.io (see README). -->
+          <form class="message" id="message" method="POST" action="https://formspree.io/f/YOUR_FORM_ID" data-contact-form>
+            <input type="hidden" name="_subject" value="New message from laylowcafe.ca">
+            <p class="hp"><label>Leave this empty <input name="_gotcha" tabindex="-1" autocomplete="off"></label></p>
+            <label>Name <input name="name" autocomplete="name" required></label>
+            <label>Email <input type="email" name="email" autocomplete="email" required></label>
+            <label>Message <textarea name="message" rows="4" required></textarea></label>
+            <button class="btn btn--olive" type="submit">Send</button>
+            <p class="message-status" data-form-status role="status" aria-live="polite">We don't take reservations, just walk in.</p>
+          </form>
         </div>
         <div class="map">
           <iframe title="Map showing Lay Low Cafe at 241 Princess St, Kingston" src="https://www.google.com/maps?q=Lay+Low+Cafe,+241+Princess+St,+Kingston,+ON&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>

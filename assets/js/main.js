@@ -83,6 +83,42 @@ if (tablist) {
   });
 }
 
+// Contact form: opens from the "Send us a message" button, sends to Formspree
+// in the background and shows the result inline.
+const form = document.querySelector("[data-contact-form]");
+if (form) {
+  const toggle = document.querySelector("[data-message-toggle]");
+  toggle.addEventListener("click", () => {
+    const open = !form.classList.contains("is-open");
+    form.classList.toggle("is-open", open);
+    toggle.setAttribute("aria-expanded", String(open));
+    if (open) form.querySelector("input[name=name]").focus();
+  });
+  const status = form.querySelector("[data-form-status]");
+  const button = form.querySelector("button[type=submit]");
+  const fallback = 'Please call us at <a href="tel:+16135469080">(613) 546-9080</a> or DM <a href="https://www.instagram.com/laylowcafe/">@laylowcafe</a>.';
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (form.action.includes("YOUR_FORM_ID")) {
+      status.innerHTML = "Our message form isn't connected yet. " + fallback;
+      return;
+    }
+    button.disabled = true;
+    button.textContent = "Sending…";
+    try {
+      const res = await fetch(form.action, { method: "POST", body: new FormData(form), headers: { Accept: "application/json" } });
+      if (!res.ok) throw new Error(res.status);
+      form.reset();
+      status.textContent = "Thanks, we got it! We'll get back to you soon.";
+    } catch {
+      status.innerHTML = "Sorry, that didn't send. " + fallback;
+    } finally {
+      button.disabled = false;
+      button.textContent = "Send";
+    }
+  });
+}
+
 // Late Night: hide events once their day is over (Kingston time), so the list never goes stale.
 const eventList = document.querySelector("[data-events]");
 if (eventList) {

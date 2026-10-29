@@ -10,7 +10,7 @@ late-night/index.html   Late Night @ Lay Low: events and private bookings (dark 
 menu/ events/ contact-us/   tiny redirects so the old GoDaddy URLs still work (events/ goes to late-night/)
 404.html
 assets/css/styles.css   all styles; colours and fonts are at the top in :root
-assets/js/main.js       open-now badge, menu tabs
+assets/js/main.js       open-now badge, menu tabs, contact form
 assets/js/intro.js      opening animation: disco ball morphs into the logo
 assets/img/             photos, logo, icons
 .nojekyll               tells GitHub Pages to serve files as-is
@@ -43,6 +43,17 @@ python3 -m http.server 8080
 After changing `styles.css` or `main.js`, bump the `?v=` number on their links in each HTML file (e.g. `?v=4` to `?v=5`). Otherwise visitors' browsers can keep using the old copy for a while.
 
 Every link and asset path is relative. Keep it that way, so the site works on the real domain, on a GitHub Pages subfolder and when opened straight from disk.
+
+## Contact form (Formspree)
+
+GitHub Pages can't process forms, so the "Send us a message" form in the Visit section posts to [Formspree](https://formspree.io). The free plan covers 50 messages a month, and Formspree emails each one on.
+
+1. Sign up at formspree.io with the inbox that should receive messages: the same address the old GoDaddy form sent to.
+2. Create a form and copy its ID, the part after `/f/` in the endpoint.
+3. In `index.html`, replace `YOUR_FORM_ID` in the form's `action`.
+4. Send yourself a test message from the live site. The first submission asks you to confirm the form in Formspree.
+
+Until that's done, the form tells visitors to call or DM instead of failing silently.
 
 ## Hosting: GitHub Pages + laylowcafe.ca
 
