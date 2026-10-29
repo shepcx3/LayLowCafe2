@@ -11,8 +11,8 @@
   const root = document.documentElement;
   if (!root.classList.contains("intro")) return;
 
-  const INK = "#1f1c16";
-  const GOLD = "#f3b53b";
+  const INK = "#3b2314";
+  const GOLD = "#e8a33d";
   // Timeline in ms. Phases overlap slightly so the motion never stops.
   const T = { morphStart: 750, morphEnd: 1450, landEnd: 2150 };
 
@@ -197,7 +197,7 @@
     );
     // Fade only the backdrop, so the logo stays solid while it lands
     overlay.animate(
-      [{ backgroundColor: "rgba(246, 239, 225, 1)" }, { backgroundColor: "rgba(246, 239, 225, 0)" }],
+      [{ backgroundColor: "rgba(243, 227, 195, 1)" }, { backgroundColor: "rgba(243, 227, 195, 0)" }],
       { duration: dur, easing: "ease-out", fill: "forwards" }
     );
     setTimeout(finish, dur);
